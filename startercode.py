@@ -1,7 +1,7 @@
 # SI 201 HW6 (APIs, JSON, and Caching)
-# Your name:
-# Your student id:
-# Your email:
+# Your name: Braden Masternak
+# Your student id: 4488 5242
+# Your email: bmastern@umich.edu
 # Who or what you worked with on this homework (including generative AI like ChatGPT):
 # If you worked with generative AI also add a statement for how you used it.
 # e.g.:
@@ -36,7 +36,16 @@ def load_json(filename):
         A dictionary with the JSON data, OR an empty dictionary {} if the file
         cannot be opened or is not valid JSON.
     """
-    pass
+    try:
+        with open(filename, encoding="utf-8") as f:
+            contents = f.read()
+         
+            dict = json.load(contents)
+            return dict
+    except:
+        print("File cannot be opened")
+        dict = {}
+        return dict
 
 
 def create_cache(dictionary, filename):
