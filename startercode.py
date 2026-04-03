@@ -37,15 +37,12 @@ def load_json(filename):
         cannot be opened or is not valid JSON.
     """
     try:
-        with open(filename, encoding="utf-8") as f:
-            contents = f.read()
-         
-            dict = json.load(contents)
+        with open(filename, encoding="utf-8") as f: 
+            dict = json.load(f)
             return dict
     except:
         print("File cannot be opened")
-        dict = {}
-        return dict
+        return {}
 
 
 def create_cache(dictionary, filename):
@@ -60,10 +57,8 @@ def create_cache(dictionary, filename):
     RETURNS:
         None
     """
-    formatted = json.dumps(dictionary)
-
     with open(filename, "w") as f:
-        f.write(formatted)
+        json.dump(dictionary, f)
 
 
 def search_breed(breed_id):
@@ -100,8 +95,19 @@ def update_cache(breed_ids, cache_file):
         A string: "Cached data for {percentage}% of breeds",
         where percentage = (successful_new_adds / len(breed_ids)) * 100.
     """
-    pass
+    cache = load_json(cache_file)
+    successful_new_adds = 0
+    for breed_id in breed_ids:
+        breed_info = search_breed(breed_id)
+        if breed_info is None:
+            continue
 
+        if breed_info[1] not in cache:
+            cache[breed_info[1]] = breed_info[0]
+            successful_new_adds += 1
+    create_cache(cache, cache_file)
+
+    return f"Cached data for {(successful_new_adds/len(breed_ids)) * 100}% of breeds"
 
 def get_longest_lifespan_breed(cache_file):
     """
@@ -115,7 +121,22 @@ def get_longest_lifespan_breed(cache_file):
         A tuple (breed_name, max_lifespan_integer) for the winning breed, OR the
         string "No breeds found" if no breed in the cache has a life.max value.
     """
-    pass
+
+    max_breed = ""
+    max_age = 0
+    cache = load_json(cache_file)
+
+    for data in cache:
+        if data["attributes"]["life"]["max"] > max_age:
+            max_age = data["attributes"]["life"]["max"]
+            max_breed = data["type"]
+        elif data["attributes"]["life"]["max"] == max_age:
+            name_lst = [max_breed, data["type"]]
+            sortedl = name_lst.sort()
+            max_breed = sortedl[0]
+        else:
+            pass
+    return (max_breed, max_age)
 
 
 def get_groups_above_cutoff(cutoff, cache_file):
