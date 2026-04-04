@@ -131,10 +131,10 @@ def get_longest_lifespan_breed(cache_file):
         try:
             if data["attributes"]["life"]["max"] > max_age:
                 max_age = data["attributes"]["life"]["max"]
-                max_breed = data["type"]
+                max_breed = data["attributes"]["name"]
             elif data["attributes"]["life"]["max"] == max_age:
-                name_lst = [max_breed, data["type"]]
-                sortedl = name_lst.sort()
+                name_lst = [max_breed, data["attributes"]["name"]]
+                sortedl = sorted(name_lst)
                 max_breed = sortedl[0]
             else:
                 pass
@@ -163,22 +163,19 @@ def get_groups_above_cutoff(cutoff, cache_file):
         A dictionary {group_uuid: count} for groups with count >= cutoff only.
     """
     breed_counts = {}
-    cutoff_group = {}
+    end_dict = {}
     cache = load_json(cache_file)
-    for data in cache:
-        group_id = data["data"]["relationships"]["group"]["data"]["id"]
-        group = data["data"]["relationships"]["group"]["data"]["type"]
-        if group not in breed_counts:
-            breed_counts[group] = 1
-            cutoff_group[group_id] = group
-        else:
-            breed_counts[group] += 1
-    index = 0
-    for id in cutoff_group:
-        if breed_counts[cutoff_group[id]] >= cutoff:
-            cutoff_group[id] = breed_counts[(cutoff_group[id].values())[index]]
-        index += 1
-    return cutoff_group
+    for datas in cache.values():
+        try:
+            id = datas["data"]["relationships"]["group"]["data"]["id"]
+            breed_counts[id] = breed_counts.get(id, 0) + 1
+        except: 
+            pass
+    for key in breed_counts:
+        count = breed_counts[key]
+        if count >= cutoff:
+            end_dict[key] = breed_counts[key]
+    return end_dict
 # Extra Credit
 def recommend_breeds_in_same_group(breed_name, cache_file):
     """
