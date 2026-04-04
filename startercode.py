@@ -126,17 +126,24 @@ def get_longest_lifespan_breed(cache_file):
     max_age = 0
     cache = load_json(cache_file)
 
-    for data in cache:
-        if data["attributes"]["life"]["max"] > max_age:
-            max_age = data["attributes"]["life"]["max"]
-            max_breed = data["type"]
-        elif data["attributes"]["life"]["max"] == max_age:
-            name_lst = [max_breed, data["type"]]
-            sortedl = name_lst.sort()
-            max_breed = sortedl[0]
-        else:
+    for datas in cache.values():
+        data = datas["data"]
+        try:
+            if data["attributes"]["life"]["max"] > max_age:
+                max_age = data["attributes"]["life"]["max"]
+                max_breed = data["type"]
+            elif data["attributes"]["life"]["max"] == max_age:
+                name_lst = [max_breed, data["type"]]
+                sortedl = name_lst.sort()
+                max_breed = sortedl[0]
+            else:
+                pass
+        except:
             pass
-    return (max_breed, max_age)
+    if max_age == 0:
+        return "No breeds found"
+    else:
+        return (max_breed, max_age)
 
 
 def get_groups_above_cutoff(cutoff, cache_file):
@@ -155,9 +162,23 @@ def get_groups_above_cutoff(cutoff, cache_file):
     RETURNS:
         A dictionary {group_uuid: count} for groups with count >= cutoff only.
     """
-    pass
-
-
+    breed_counts = {}
+    cutoff_group = {}
+    cache = load_json(cache_file)
+    for data in cache:
+        group_id = data["data"]["relationships"]["group"]["data"]["id"]
+        group = data["data"]["relationships"]["group"]["data"]["type"]
+        if group not in breed_counts:
+            breed_counts[group] = 1
+            cutoff_group[group_id] = group
+        else:
+            breed_counts[group] += 1
+    index = 0
+    for id in cutoff_group:
+        if breed_counts[cutoff_group[id]] >= cutoff:
+            cutoff_group[id] = breed_counts[(cutoff_group[id].values())[index]]
+        index += 1
+    return cutoff_group
 # Extra Credit
 def recommend_breeds_in_same_group(breed_name, cache_file):
     """
